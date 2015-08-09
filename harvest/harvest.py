@@ -7,8 +7,11 @@
 """
 
 import requests
-from urlparse import urlparse
 from base64   import b64encode as enc64
+try:
+    from urllib.parse import urlparse
+except ImportError:
+    from urlparse import urlparse
 
 HARVEST_STATUS_URL = 'http://www.harveststatus.com/api/v2/status.json'
 
@@ -174,7 +177,7 @@ class Harvest(object):
             if 'DELETE' not in method:
                 return resp.json()
             return resp
-        except Exception, e:
+        except Exception as e:
             raise HarvestError(e)
 
 def status():
