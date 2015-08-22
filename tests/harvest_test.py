@@ -40,6 +40,26 @@ class TestHarvest(unittest.TestCase):
         self.assertFalse(self.basic_client.oauth2, 'oauth2 property should False')
         self.assertTrue(self.oauth_client.oauth2, 'oauth2 property should True')
 
+    def test_oauth2_properties(self):
+        self.assertIsNotNone(self.oauth_client.authorize_url, 'authorize_url not set in oauth2 client')
+        self.assertNotEqual(self.oauth_client.authorize_data, {}, 'authorize_data not set in oauth2 client')
+        self.assertEqual(self.basic_client.authorize_data, {}, 'authorize_data is set in basic client')
+        self.assertIsNone(self.basic_client.authorize_url, 'authorize_url is set in basic client')
+
+    def test_basic_properties(self):
+        self.assertIsNotNone(self.basic_client.email, 'email not set on basic client')
+        self.assertIsNotNone(self.basic_client.password, 'password not set on basic client')
+        self.assertIsNone(self.oauth_client.email, 'email set on oauth client')
+        self.assertIsNone(self.oauth_client.password, 'password set on oauth client')
+
+    def test_set_content_type(self):
+        self.assertEqual(self.basic_client.headers.get('Accept'), 'application/json', "Accept header not set correctly.")
+        new_client = HarvestClient(self.HARVEST_URI, content_type='application/xml', client_id='Test')
+        self.assertEqual(new_client.headers.get('Accept'), 'application/xml', "Accept header not set correctly.")
+
+    def test_set_headers(self):
+        self.assertIn('Authorization', self.basic_client.headers.keys(), 'Auth header not set in basic client.')
+        self.assertNotIn('Authorization', self.oauth_client.headers.keys(), 'Auth header set in oauth client.')
     # def test_status_up(self):
     #     self.assertEqual("up", harvest.HarvestStatus().get(), "Harvest must be down?")
 

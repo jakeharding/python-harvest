@@ -25,29 +25,39 @@ class HarvestClient(object):
     _authorize_data = {}
     _authorize_url = None
     _oauth2 = False
+    _email = None
+    _password = None
+    _headers = {}
 
     # def __init__(self, uri, email, password, put_auth_in_header=True):
-    def __init__(self, uri, **kwargs):
+    def __init__(self, uri, content_type=None, **kwargs):
         parsed = urlparse(uri)
         if not (parsed.scheme and parsed.netloc):
             raise HarvestError('Invalid harvest uri "{0}".'.format(uri))
         self.uri = uri.rstrip('/')
+
+        if not content_type:
+            content_type = 'application/json'
+        self.headers = {
+            'Accept': content_type
+        }
         
         self.oauth2 = bool(kwargs.get('client_id'))
         if self.oauth2:
             self.authorize_url = '%s/%s' % (self.uri, HARVEST_OAUTH_AUTHORIZE_PATH)
             self.authorize_data = kwargs
+        else:
+            self.email    = kwargs.get('email').strip()
+            self.password = kwargs.get('password').strip()
+            auth_string = '{self.email}:{self.password}'.format(self=self)
+            auth_string = enc64(bytes(auth_string, 'ascii'))
+            self.set_header('Authorization', 'Basic {0}'.format(auth_string))
 
-        # self.__email    = email.strip()
-        # self.__password = password
-        # self.__headers = {
-        #     'Accept'        : 'application/json',
-        #     # 'User-Agent'    : 'Mozilla/5.0',  # 'TimeTracker for Linux' -- ++ << >>
-        # }
-        # if put_auth_in_header:
-        #     auth_string = '{self.email}:{self.password}'.format(self=self)
-        #     auth_string = enc64(bytes(auth_string, 'ascii'))
-        #     self.__headers['Authorization'] = 'Basic {0}'.format(auth_string)
+        
+    def set_header(self, key, value):
+        self.headers.update({
+            key: value
+        })
 
     @property
     def uri(self):
@@ -80,15 +90,31 @@ class HarvestClient(object):
     @oauth2.setter
     def oauth2(self, val):
         self._oauth2 = val
+
+    @property
+    def email(self):
+        return self._email
+
+    @email.setter
+    def email(self, val):
+        self._email = val
+
+    @property
+    def password(self):
+        return self._password
+
+    @password.setter
+    def password(self, val):
+        self._password = val
+
+    @property
+    def headers(self):
+        return self._headers
+
+    @headers.setter
+    def headers(self, val):
+        self._headers = val
     
-
-
-    # @property
-    # def email(self):
-    #     return self.__email
-    # @property
-    # def password(self):
-    #     return self.__password
 
     @property
     def status(self):
