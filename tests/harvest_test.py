@@ -11,7 +11,15 @@ class TestHarvest(unittest.TestCase):
     HARVEST_URI = "https://goretoytest.harvestapp.com"
 
     def setUp(self):
-        self.harvest_client = HarvestClient(self.HARVEST_URI)
+        basic_kwargs = {
+            'email': "tester@goretoy.com",
+            'password': "tester account"
+        }
+        oauth2_kwargs = {
+            'client_id': 'Unittest'
+        }
+        self.basic_client = HarvestClient(self.HARVEST_URI, **basic_kwargs)
+        self.oauth_client = HarvestClient(self.HARVEST_URI, **oauth2_kwargs)
 
     def tearDown(self):
         pass
@@ -22,10 +30,15 @@ class TestHarvest(unittest.TestCase):
         except HarvestError as e:
             self.assertTrue(True)
         else:
-            self.assertFalse(True, 'Wrong exceptio raised')
+            self.assertFalse(True, 'Wrong exception raised')
 
     def test_set_uri(self):
-        self.assertEqual(self.harvest_client.uri, self.HARVEST_URI)
+        self.assertEqual(self.basic_client.uri, self.HARVEST_URI)
+        self.assertEqual(self.oauth_client.uri, self.HARVEST_URI)
+
+    def test_set_oauth2(self):
+        self.assertFalse(self.basic_client.oauth2, 'oauth2 property should False')
+        self.assertTrue(self.oauth_client.oauth2, 'oauth2 property should True')
 
     # def test_status_up(self):
     #     self.assertEqual("up", harvest.HarvestStatus().get(), "Harvest must be down?")
