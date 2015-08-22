@@ -17,9 +17,9 @@ from .metadata import (
     __version__,
 )
 
-from .harvest import *
+from .harvest import HarvestClient, HarvestError
 
 __all__ = [
     '__author__', '__copyright__', '__email__', '__license__',
-    '__maintainer__', '__version__', 'harvest'
+    '__maintainer__', '__version__', 'HarvestClient', 'HarvestError'
 ]

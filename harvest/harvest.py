@@ -14,36 +14,81 @@ except ImportError:
     from urlparse import urlparse
 
 HARVEST_STATUS_URL = 'http://www.harveststatus.com/api/v2/status.json'
+HARVEST_OAUTH_AUTHORIZE_PATH = "oauth2/authorize"
 
 class HarvestError(Exception):
     pass
 
-class Harvest(object):
-    def __init__(self, uri, email, password, put_auth_in_header=True):
-        self.__uri      = uri.rstrip('/')
+class HarvestClient(object):
+
+    _uri = None
+    _authorize_data = {}
+    _authorize_url = None
+    _oauth2 = False
+
+    # def __init__(self, uri, email, password, put_auth_in_header=True):
+    def __init__(self, uri, **kwargs):
         parsed = urlparse(uri)
         if not (parsed.scheme and parsed.netloc):
             raise HarvestError('Invalid harvest uri "{0}".'.format(uri))
-        self.__email    = email.strip()
-        self.__password = password
-        self.__headers = {
-            'Accept'        : 'application/json',
-            'User-Agent'    : 'Mozilla/5.0',  # 'TimeTracker for Linux' -- ++ << >>
-        }
-        if put_auth_in_header:
-            auth_string = '{self.email}:{self.password}'.format(self=self)
-            auth_string = enc64(bytes(auth_string, 'ascii'))
-            self.__headers['Authorization'] = 'Basic {0}'.format(auth_string)
+        self.uri = uri.rstrip('/')
+        
+        self.oauth2 = bool(kwargs.get('client_id'))
+        if self.oauth2:
+            self.authorize_url = '%s/%s' % (self.uri, HARVEST_OAUTH_AUTHORIZE_PATH)
+            self.authorize_data = kwargs
+
+        # self.__email    = email.strip()
+        # self.__password = password
+        # self.__headers = {
+        #     'Accept'        : 'application/json',
+        #     # 'User-Agent'    : 'Mozilla/5.0',  # 'TimeTracker for Linux' -- ++ << >>
+        # }
+        # if put_auth_in_header:
+        #     auth_string = '{self.email}:{self.password}'.format(self=self)
+        #     auth_string = enc64(bytes(auth_string, 'ascii'))
+        #     self.__headers['Authorization'] = 'Basic {0}'.format(auth_string)
 
     @property
     def uri(self):
-        return self.__uri
+        return self._uri
+
+    @uri.setter
+    def uri(self, value):
+        self._uri = value
+
     @property
-    def email(self):
-        return self.__email
+    def authorize_url(self):
+        return self._authorize_url
+
+    @authorize_url.setter
+    def authorize_url(self, value):
+        self._authorize_url = value
+
     @property
-    def password(self):
-        return self.__password
+    def authorize_data(self):
+        return self._authorize_data
+    
+    @authorize_data.setter
+    def authorize_data(self, val):
+        self._authorize_data = val
+
+    @property
+    def oauth2(self):
+        return self._oauth2
+
+    @oauth2.setter
+    def oauth2(self, val):
+        self._oauth2 = val
+    
+
+
+    # @property
+    # def email(self):
+    #     return self.__email
+    # @property
+    # def password(self):
+    #     return self.__password
 
     @property
     def status(self):
@@ -171,7 +216,7 @@ class Harvest(object):
             'headers' : self.__headers,
             'data'    : data,
         }
-        if 'Authorization' not in self.__headers:
+        if not oauth2 and 'Authorization' not in self.__headers:
             kwargs['auth'] = (self.email, self.password)
 
         try:
@@ -181,6 +226,27 @@ class Harvest(object):
             return resp
         except Exception as e:
             raise HarvestError(e)
+
+
+# class HarvestOauth(Harvest):
+#     authorize_url = None
+#     authorize_data = {}
+#     oauth2 = True
+
+#     def __init__(self, domain, client_id, redirect):
+#         self.__uri = domain.rstrip('/')
+#         self.authorize_url = '%s/oauth2/authorize'
+#         redirect = urlparse(redirect)
+#         self.authorize_data = {
+#             'redirect_uri': redirect,
+#             'client_id': client_id
+#         }
+#         self.get_auth_code()
+
+#     def get_auth_code(self):
+#         rsp = self._get(self.authorize_url, self.authorize_data)
+#         import pdb; pdb.set_trace()
+
 
 def status():
     try:
