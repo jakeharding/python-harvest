@@ -31,7 +31,9 @@ class Harvest(object):
             'User-Agent'    : 'Mozilla/5.0',  # 'TimeTracker for Linux' -- ++ << >>
         }
         if put_auth_in_header:
-            self.__headers['Authorization'] = 'Basic {0}'.format(enc64('{self.email}:{self.password}'.format(self=self)))
+            auth_string = '{self.email}:{self.password}'.format(self=self)
+            auth_string = enc64(bytes(auth_string, 'ascii'))
+            self.__headers['Authorization'] = 'Basic {0}'.format(auth_string)
 
     @property
     def uri(self):
