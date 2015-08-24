@@ -9,12 +9,13 @@
 import requests
 from base64   import b64encode as enc64
 try:
-    from urllib.parse import urlparse
+    from urllib.parse import urlparse, urlencode
 except ImportError:
     from urlparse import urlparse
+    from urllib import urlencode
 
-HARVEST_STATUS_URL = 'http://www.harveststatus.com/api/v2/status.json'
-HARVEST_OAUTH_AUTHORIZE_PATH = "oauth2/authorize"
+from .constants import *
+
 
 class HarvestError(Exception):
     pass
@@ -27,37 +28,72 @@ class HarvestClient(object):
     _oauth2 = False
     _email = None
     _password = None
+    _content_type = None
     _headers = {}
 
-    # def __init__(self, uri, email, password, put_auth_in_header=True):
+    _errors = {
+        'invalid_uri': 'Invalid harvest uri "{0}".'
+    }
+
     def __init__(self, uri, content_type=None, **kwargs):
         parsed = urlparse(uri)
         if not (parsed.scheme and parsed.netloc):
-            raise HarvestError('Invalid harvest uri "{0}".'.format(uri))
-        self.uri = uri.rstrip('/')
+            raise HarvestError(self._errors.get('invalid_uri').format(uri))
+        self.uri = uri
 
         if not content_type:
-            content_type = 'application/json'
+            self.content_type = HTTPContentType.JSON
+        else:
+            self.content_type = content_type
+
+        #Reset the headers on every initialization
         self.headers = {
-            'Accept': content_type
+            HTTPHeader.ACCEPT: self.content_type
         }
         
-        self.oauth2 = bool(kwargs.get('client_id'))
+        self.oauth2 = bool(kwargs.get(OauthKey.CLIENT_ID))
         if self.oauth2:
-            self.authorize_url = '%s/%s' % (self.uri, HARVEST_OAUTH_AUTHORIZE_PATH)
-            self.authorize_data = kwargs
+            self.authorize_data = {
+                OauthKey.CLIENT_ID: kwargs.get(OauthKey.CLIENT_ID),
+                OauthKey.REDIRECT_URI: kwargs.get(OauthKey.REDIRECT_URI),
+                OauthKey.RESPONSE_TYPE: OauthValue.CODE
+            }
+            self.authorize_url = '%s/%s' %(self.uri, HARVEST_OAUTH_AUTHORIZE_PATH)
+            
         else:
-            self.email    = kwargs.get('email').strip()
-            self.password = kwargs.get('password').strip()
+            self.email    = kwargs.get(BasicKey.EMAIL)
+            self.password = kwargs.get(BasicKey.PASSWORD)
             auth_string = '{self.email}:{self.password}'.format(self=self)
             auth_string = enc64(bytes(auth_string, 'ascii'))
-            self.set_header('Authorization', 'Basic {0}'.format(auth_string))
+            self.set_header(HTTPHeader.AUTH, HTTPHeader.BASIC_AUTH_FORMAT.format(auth_string))
+            
 
         
     def set_header(self, key, value):
-        self.headers.update({
+        self._headers.update({
             key: value
         })
+
+    def get_tokens(self, code, secret):
+        data = {
+            OauthKey.CODE: code,
+            OauthKey.CLIENT_ID: self.authorize_data.get(OauthKey.CLIENT_ID),
+            OauthKey.CLIENT_SECRET: secret,
+            # 'redirect_uri': self.authorize_data.get('redirect_uri'),
+            OauthKey.GRANT_TYPE: OauthValue.AUTH_CODE
+        }
+        self.set_header(HTTPHeader.CONTENT_TYPE, HTTPContentType.FORM_ENCODED)
+        rsp = self._post(HARVEST_OAUTH_TOKEN_PATH, params=data) #Data must be in query parameters
+        self.set_header(HTTPHeader.CONTENT_TYPE, self.content_type) #Reset this content type
+        return (rsp.get(OauthKey.ACCESS_TOKEN), rsp.get(OauthKey.REFRESH_TOKEN))
+
+    @property
+    def content_type(self):
+        return self._content_type
+
+    @content_type.setter
+    def content_type(self, val):
+        self._content_type = val
 
     @property
     def uri(self):
@@ -65,7 +101,11 @@ class HarvestClient(object):
 
     @uri.setter
     def uri(self, value):
-        self._uri = value
+        self._uri = value.rstrip('/')
+
+    @property
+    def token_url(self):
+        return '%s/%s' %(self.uri, HARVEST_OAUTH_TOKEN_PATH)
 
     @property
     def authorize_url(self):
@@ -73,7 +113,7 @@ class HarvestClient(object):
 
     @authorize_url.setter
     def authorize_url(self, value):
-        self._authorize_url = value
+        self._authorize_url = '%s?%s' %(value, urlencode(self.authorize_data))
 
     @property
     def authorize_data(self):
@@ -97,7 +137,7 @@ class HarvestClient(object):
 
     @email.setter
     def email(self, val):
-        self._email = val
+        self._email = val.strip()
 
     @property
     def password(self):
@@ -226,23 +266,24 @@ class HarvestClient(object):
     def update(self, entry_id, data):
         return self._post('/daily/update/{0}'.format(entry_id), data)
 
-    def _get(self, path='/', data=None):
-        return self._request('GET', path, data)
-    def _post(self, path='/', data=None):
-        return self._request('POST', path, data)
-    def _put(self, path='/', data=None):
-        return self._request('PUT', path, data)
+    def _get(self, path='/', data=None, params=None):
+        return self._request('GET', path, data, params)
+    def _post(self, path='/', data=None, params=None):
+        return self._request('POST', path, data, params=params)
+    def _put(self, path='/', data=None, params=None):
+        return self._request('PUT', path, data, params=params)
     def _delete(self, path='/', data=None):
         return self._request('DELETE', path, data)
-    def _request(self, method='GET', path='/', data=None):
+    def _request(self, method='GET', path='/', data=None, params=None):
         url = '{self.uri}{path}'.format(self=self, path=path)
         kwargs = {
             'method'  : method,
-            'url'     : '{self.uri}{path}'.format(self=self, path=path),
-            'headers' : self.__headers,
+            'url'     : url,
+            'headers' : self.headers,
             'data'    : data,
+            'params'  : params
         }
-        if not oauth2 and 'Authorization' not in self.__headers:
+        if not self.oauth2 and 'Authorization' not in self.headers:
             kwargs['auth'] = (self.email, self.password)
 
         try:
@@ -252,26 +293,6 @@ class HarvestClient(object):
             return resp
         except Exception as e:
             raise HarvestError(e)
-
-
-# class HarvestOauth(Harvest):
-#     authorize_url = None
-#     authorize_data = {}
-#     oauth2 = True
-
-#     def __init__(self, domain, client_id, redirect):
-#         self.__uri = domain.rstrip('/')
-#         self.authorize_url = '%s/oauth2/authorize'
-#         redirect = urlparse(redirect)
-#         self.authorize_data = {
-#             'redirect_uri': redirect,
-#             'client_id': client_id
-#         }
-#         self.get_auth_code()
-
-#     def get_auth_code(self):
-#         rsp = self._get(self.authorize_url, self.authorize_data)
-#         import pdb; pdb.set_trace()
 
 
 def status():
