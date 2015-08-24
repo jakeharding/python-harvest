@@ -32,7 +32,8 @@ class HarvestClient(object):
     _headers = {}
 
     _errors = {
-        'invalid_uri': 'Invalid harvest uri "{0}".'
+        'invalid_uri': 'Invalid harvest uri "{0}".',
+        'request_failed': 'Harvest request failed. Status code: {0}. Error: {1}'
     }
 
     def __init__(self, uri, content_type=None, **kwargs):
@@ -79,13 +80,31 @@ class HarvestClient(object):
             OauthKey.CODE: code,
             OauthKey.CLIENT_ID: self.authorize_data.get(OauthKey.CLIENT_ID),
             OauthKey.CLIENT_SECRET: secret,
-            # 'redirect_uri': self.authorize_data.get('redirect_uri'),
+            OauthKey.REDIRECT_URI: self.authorize_data.get('redirect_uri'),
             OauthKey.GRANT_TYPE: OauthValue.AUTH_CODE
         }
         self.set_header(HTTPHeader.CONTENT_TYPE, HTTPContentType.FORM_ENCODED)
         rsp = self._post(HARVEST_OAUTH_TOKEN_PATH, params=data) #Data must be in query parameters
-        self.set_header(HTTPHeader.CONTENT_TYPE, self.content_type) #Reset this content type
+        self.reset_content_type() #Reset this content type
         return (rsp.get(OauthKey.ACCESS_TOKEN), rsp.get(OauthKey.REFRESH_TOKEN))
+
+    def refresh_tokens(self, token, secret):
+        data = {
+            OauthKey.CLIENT_ID: self.authorize_data.get(OauthKey.CLIENT_ID),
+            OauthKey.CLIENT_SECRET: secret,
+            OauthKey.REFRESH_TOKEN: token,
+            OauthKey.GRANT_TYPE: OauthValue.REFRESH_TOKEN
+        }
+        self.set_form_encoded_type()
+        rsp = self._post(HARVEST_OAUTH_TOKEN_PATH, params=data)
+        self.reset_content_type()
+        return (rsp.get(OauthKey.ACCESS_TOKEN), rsp.get(OauthKey.REFRESH_TOKEN))
+        
+    def reset_content_type(self):
+        self.set_header(HTTPHeader.CONTENT_TYPE, self.content_type)
+
+    def set_form_encoded_type(self):
+        self.set_header(HTTPHeader.CONTENT_TYPE, HTTPContentType.FORM_ENCODED)
 
     @property
     def content_type(self):
@@ -288,11 +307,17 @@ class HarvestClient(object):
 
         try:
             resp = requests.request(**kwargs)
-            if 'DELETE' not in method:
-                return resp.json()
-            return resp
+            if self.response_is_successful(resp.status_code):
+                if 'DELETE' not in method:
+                    return resp.json()
+                return resp
+            else:
+                raise HarvestError(self._errors.get('request_failed').format(resp.status_code, resp.json().get('error_description')))
         except Exception as e:
             raise HarvestError(e)
+
+    def response_is_successful(self, status_code):
+        return 200 <= status_code < 300
 
 
 def status():

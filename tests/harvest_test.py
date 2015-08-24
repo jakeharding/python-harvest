@@ -4,7 +4,7 @@ from time import time
 
 sys.path.insert(0, sys.path[0]+"/..")
 
-from harvest import HarvestClient, HarvestError
+from harvest import HarvestClient, HarvestError, HTTPContentType, HTTPHeader
 
 class TestHarvest(unittest.TestCase):
 
@@ -60,6 +60,16 @@ class TestHarvest(unittest.TestCase):
     def test_set_headers(self):
         self.assertIn('Authorization', self.basic_client.headers.keys(), 'Auth header not set in basic client.')
         self.assertNotIn('Authorization', self.oauth_client.headers.keys(), 'Auth header set in oauth client.')
+
+    def test_set_encoded_type(self):
+        self.basic_client.set_form_encoded_type()
+        self.assertEqual(self.basic_client.headers.get(HTTPHeader.CONTENT_TYPE), HTTPContentType.FORM_ENCODED)
+
+    def test_reset_content_type(self):
+        self.test_set_encoded_type()
+        self.basic_client.reset_content_type()
+        self.assertEqual(self.basic_client.headers.get(HTTPHeader.CONTENT_TYPE), HTTPContentType.JSON)
+
     # def test_status_up(self):
     #     self.assertEqual("up", harvest.HarvestStatus().get(), "Harvest must be down?")
 

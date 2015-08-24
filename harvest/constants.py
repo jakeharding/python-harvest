@@ -9,6 +9,7 @@ Holds string literals associated with Harvest REST API.
 HARVEST_STATUS_URL = 'http://www.harveststatus.com/api/v2/status.json'
 HARVEST_OAUTH_AUTHORIZE_PATH = "/oauth2/authorize"
 HARVEST_OAUTH_TOKEN_PATH = "/oauth2/token"
+HOURS_OF_VALID_TOKEN = 18
 
 class HTTPContentType:
     """Class hold to content type strings as a constant."""
@@ -41,6 +42,7 @@ class OauthValue:
     """Values expected when using oauth with the Harvest API."""
     CODE = 'code'
     AUTH_CODE = 'authorization_code'
+    REFRESH_TOKEN = 'refresh_token'
 
 class BasicKey:
     """Keys expected to be be submitted in the kwargs of the HarvestClient when using Basic Auth."""

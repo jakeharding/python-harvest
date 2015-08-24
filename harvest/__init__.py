@@ -18,8 +18,10 @@ from .metadata import (
 )
 
 from .harvest import HarvestClient, HarvestError
+from .constants import HOURS_OF_VALID_TOKEN, HTTPContentType, HTTPHeader
 
 __all__ = [
     '__author__', '__copyright__', '__email__', '__license__',
-    '__maintainer__', '__version__', 'HarvestClient', 'HarvestError'
+    '__maintainer__', '__version__', 'HarvestClient', 'HarvestError',
+    'HOURS_OF_VALID_TOKEN', 'HTTPContentType', 'HTTPHeader'
 ]
