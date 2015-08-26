@@ -33,7 +33,8 @@ class HarvestClient(object):
 
     _errors = {
         'invalid_uri': 'Invalid harvest uri "{0}".',
-        'request_failed': 'Harvest request failed. Status code: {0}. Error: {1}'
+        'request_failed': 'Harvest request failed. Status code: {0}. Error: {1}',
+        'not_oauth2': 'Oauth2 is not available with basic authentication'
     }
 
     def __init__(self, uri, content_type=None, **kwargs):
@@ -75,7 +76,12 @@ class HarvestClient(object):
             key: value
         })
 
+    def raise_if_not_oauth(self):
+        if not self.oauth2:
+            raise HarvestError(self._errors.get('not_oauth2'))
+
     def get_tokens(self, code, secret):
+        self.raise_if_not_oauth()
         data = {
             OauthKey.CODE: code,
             OauthKey.CLIENT_ID: self.authorize_data.get(OauthKey.CLIENT_ID),
@@ -89,6 +95,7 @@ class HarvestClient(object):
         return (rsp.get(OauthKey.ACCESS_TOKEN), rsp.get(OauthKey.REFRESH_TOKEN))
 
     def refresh_tokens(self, token, secret):
+        self.raise_if_not_oauth()
         data = {
             OauthKey.CLIENT_ID: self.authorize_data.get(OauthKey.CLIENT_ID),
             OauthKey.CLIENT_SECRET: secret,
