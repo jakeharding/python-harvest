@@ -192,60 +192,89 @@ class HarvestClient(object):
     def who_am_i(self):
         return self._get('/account/who_am_i')
 
+    ## Projects
+
+    def projects(self, params=None):
+        return self._get('/projects', params=params)
+
+    def get_project(self, project_id, params=None):
+        return self._get('/projects/{0}'.format(project_id), params=params)
+
+    def create_project(self, params=None, **kwargs):
+        return self._post('/projects', data=kwargs, params=params)
+
+    def update_project(self, project_id, params=None, **kwargs):
+        url = '/projects/{0}'.format(project_id)
+        return self._put(url, data=kwargs, params=params)
+
+    def toggle_project_active(self, project_id, params=None,):
+        return self._put('/projects/{0}/toggle'.format(project_id), params=params)
+
+    def delete_project(self, project_id, params=None):
+        return self._delete('/projects/{0}'.format(project_id), params=params)
+
     ## Client Contacts
 
-    def contacts(self, updated_since=None):
+    def contacts(self, updated_since=None, params=None):
         url = '/contacts'
         if updated_since is not None:
             url = '{0}?updated_since={1}'.format(url, updated_since)
         return self._get(url)
 
-    def get_contact(self, contact_id):
+    def get_contact(self, contact_id, params=None):
         return self._get('/contacts/{0}'.format(contact_id))
 
-    def create_contact(self, new_contact_id, fname, lname, **kwargs):
+    def create_contact(self, new_contact_id, fname, lname, params=None, **kwargs):
         url  = '/contacts/{0}'.format(new_contact_id)
         kwargs.update({'first-name':fname, 'last-name':lname})
         return self._post(url, data=kwargs)
 
-    def client_contacts(self, client_id, updated_since=None):
+    def client_contacts(self, client_id, updated_since=None, params=None):
         url = '/clients/{0}/contacts'.format(client_id)
         if updated_since is not None:
             url = '{0}?updated_since={1}'.format(url, updated_since)
         return self._get(url)
 
-    def update_contact(self, contact_id, **kwargs):
+    def update_contact(self, contact_id, params=None, **kwargs):
         url = '/contacts/{0}'.format(contact_id)
         return self._put(url, data=kwargs)
 
-    def delete_contact(self, contact_id):
+    def delete_contact(self, contact_id, params=None):
         return self._delete('/contacts/{0}'.format(contact_id))
 
     ## Clients
 
-    def clients(self, updated_since=None):
+    def clients(self, updated_since=None, params=None):
         url = '/clients'
         if updated_since is not None:
             url = '{0}?updated_since={1}'.format(url, updated_since)
-        return self._get(url)
+        return self._get(url, params=params)
 
-    def get_client(self, client_id):
-        return self._get('/clients/{0}'.format(client_id))
+    def get_client(self, client_id, params=None):
+        return self._get('/clients/{0}'.format(client_id), params=params)
 
-    def create_client(self, new_client_id, name, **kwargs):
+    def create_client(self, new_client_id, name, params=None, **kwargs):
         url  = '/clients/{0}'.format(new_client_id)
         kwargs.update({'name':name})
-        return self._post(url, data=kwargs)
+        return self._post(url, data=kwargs, params=params)
 
-    def update_client(self, client_id, **kwargs):
+    def update_client(self, client_id, params=None, **kwargs):
         url = '/clients/{0}'.format(client_id)
-        return self._put(url, data=kwargs)
+        return self._put(url, data=kwargs, params=params)
 
-    def toggle_client_active(self, client_id):
-        return self._get('/clients/{0}/toggle'.format(client_id))
+    def toggle_client_active(self, client_id, params=None):
+        return self._get('/clients/{0}/toggle'.format(client_id), params=params)
 
-    def delete_client(self, client_id):
-        return self._delete('/clients/{0}'.format(client_id))
+    def delete_client(self, client_id, params=None):
+        return self._delete('/clients/{0}'.format(client_id), params=params)
+
+    ## Tasks
+    def tasks(self, params=None):
+        """Retrieves all tasks from Harvest.
+        Will filter by updated since if provided in the params.
+        """
+        url = '/tasks'
+        return self._get(url, params=params)
 
     ## Expense Categories
 
@@ -270,15 +299,14 @@ class HarvestClient(object):
 
     ## Time Tracking
 
-    @property
-    def today(self):
-        return self._get('/daily')
+    def today(self, params=None):
+        return self._get('/daily', params=params)
 
-    def get_day(self, day_of_the_year=1, year=2012):
-        return self._get('/daily/{0}/{1}'.format(day_of_the_year, year))
+    def get_day(self, day_of_the_year=1, year=2012, params=None):
+        return self._get('/daily/{0}/{1}'.format(day_of_the_year, year), params=params)
 
     def get_entry(self, entry_id):
-        return self._get('/daily/show/{0}'.format(entry_id))
+        return self._get('/daily/show/{0}'.format(entry_id), params=None)
 
     def toggle_timer(self, entry_id):
         return self._get('/daily/timer/{0}'.format(entry_id))

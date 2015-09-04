@@ -6,7 +6,11 @@ from mock import patch
 
 sys.path.insert(0, sys.path[0]+"/..")
 
-from harvest import HarvestClient, HarvestError, HTTPContentType, HTTPHeader, OauthKey
+from harvest import (
+    HarvestClient, HarvestError, HTTPContentType, 
+    HTTPHeader, OauthKey, BasicKey,
+    HTTPContentType
+)
 
 class TestHarvest(unittest.TestCase):
 
@@ -16,11 +20,11 @@ class TestHarvest(unittest.TestCase):
 
     def setUp(self):
         basic_kwargs = {
-            'email': "tester@goretoy.com",
-            'password': "tester account"
+            BasicKey.EMAIL: "tester@goretoy.com",
+            BasicKey.PASSWORD: "tester account"
         }
         oauth2_kwargs = {
-            'client_id': 'Unittest'
+            OauthKey.CLIENT_ID: 'Unittest'
         }
 
         self.basic_client = HarvestClient(self.HARVEST_URI, **basic_kwargs)
@@ -59,13 +63,13 @@ class TestHarvest(unittest.TestCase):
         self.assertIsNone(self.oauth_client.password, 'password set on oauth client')
 
     def test_set_content_type(self):
-        self.assertEqual(self.basic_client.headers.get('Accept'), 'application/json', "Accept header not set correctly.")
-        new_client = HarvestClient(self.HARVEST_URI, content_type='application/xml', client_id='Test')
-        self.assertEqual(new_client.headers.get('Accept'), 'application/xml', "Accept header not set correctly.")
+        self.assertEqual(self.basic_client.headers.get(HTTPHeader.ACCEPT), 'application/json', "Accept header not set correctly.")
+        new_client = HarvestClient(self.HARVEST_URI, content_type=HTTPContentType.XML, client_id='Test')
+        self.assertEqual(new_client.headers.get(HTTPHeader.ACCEPT), HTTPContentType.XML, "Accept header not set correctly.")
 
     def test_set_headers(self):
-        self.assertIn('Authorization', self.basic_client.headers.keys(), 'Auth header not set in basic client.')
-        self.assertNotIn('Authorization', self.oauth_client.headers.keys(), 'Auth header set in oauth client.')
+        self.assertIn(HTTPHeader.AUTH, self.basic_client.headers.keys(), 'Auth header not set in basic client.')
+        self.assertNotIn(HTTPHeader.AUTH, self.oauth_client.headers.keys(), 'Auth header set in oauth client.')
 
     def test_set_encoded_type(self):
         self.basic_client.set_form_encoded_type()
@@ -98,6 +102,10 @@ class TestHarvest(unittest.TestCase):
         "No difference between the clients on this method."
         self.assertTrue(self.basic_client.response_is_successful(200))
         self.assertFalse(self.basic_client.response_is_successful(300))
+
+    def test_list_projects(self):
+        with patch.object(HarvestClient, '_request', return_value={"project_id": 1}) as project_mock:
+            self.assertTrue(isinstance(project_mock, list), '%s is not a list' % project_mock.return_value)
 
     # def test_status_up(self):
     #     self.assertEqual("up", harvest.HarvestStatus().get(), "Harvest must be down?")
