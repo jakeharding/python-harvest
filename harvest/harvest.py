@@ -20,7 +20,7 @@ from .constants import *
 class HarvestError(Exception):
     pass
 
-class HarvestClient(object):
+class HarvestRestClient(object):
 
     _uri = None
     _authorize_data = {}
