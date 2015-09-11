@@ -188,9 +188,8 @@ class HarvestRestClient(object):
 
     ## Accounts
 
-    @property
-    def who_am_i(self):
-        return self._get('/account/who_am_i')
+    def who_am_i(self, params=None):
+        return self._get('/account/who_am_i', params=params)
 
     ## Projects
 

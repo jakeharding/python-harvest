@@ -1,0 +1,60 @@
+[
+    {
+        "project": {
+            "created_at": "2015-08-11T21:14:44Z",
+            "hint_latest_record_at": null,
+            "estimate_by": "project",
+            "starts_on": "2015-08-11",
+            "id": 8658454,
+            "client_id": 3719407,
+            "ends_on": "2016-08-11",
+            "code": "1",
+            "bill_by": "Project",
+            "updated_at": "2015-08-11T21:14:44Z",
+            "budget_by": "project",
+            "active": true,
+            "hint_earliest_record_at": null,
+            "notify_when_over_budget": false,
+            "show_budget_to_all": false,
+            "over_budget_notified_at": null,
+            "over_budget_notification_percentage": 80.0,
+            "billable": true,
+            "hourly_rate": 100.0,
+            "budget": 2000.0,
+            "cost_budget": null,
+            "name": "NoThyme App",
+            "estimate": 2000.0,
+            "notes": "",
+            "cost_budget_include_expenses": false
+        }
+    },
+    {
+    "project": {
+        "code": "321",
+        "estimate": null,
+        "notes": "AndroidApp for Needs some Apps",
+        "show_budget_to_all": false,
+        "client_id": 3757925,
+        "over_budget_notification_percentage": 80.0,
+        "created_at": "2015-08-27T00:42:20Z",
+        "ends_on": null,
+        "notify_when_over_budget": true,
+        "hourly_rate": null,
+        "billable": true,
+        "cost_budget": null,
+        "updated_at": "2015-08-27T00:43:31Z",
+        "id": 8759970,
+        "budget": null,
+        "active": true,
+        "hint_latest_record_at": null,
+        "name": "AndroidApp",
+        "cost_budget_include_expenses": false,
+        "bill_by": "Tasks",
+        "over_budget_notified_at": null,
+        "estimate_by": "null",
+        "budget_by": "null",
+        "hint_earliest_record_at": null,
+        "starts_on": "2015-08-26"
+    }
+}
+]
