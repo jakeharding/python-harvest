@@ -17,9 +17,15 @@ from .metadata import (
     __version__,
 )
 
-from .harvest import *
+from .harvest import HarvestRestClient, HarvestError
+from .constants import (
+    HOURS_OF_VALID_TOKEN, HTTPContentType, HTTPHeader,
+    OauthKey, BasicKey
+)
 
 __all__ = [
     '__author__', '__copyright__', '__email__', '__license__',
-    '__maintainer__', '__version__', 'harvest'
+    '__maintainer__', '__version__', 'HarvestClient', 'HarvestError',
+    'HOURS_OF_VALID_TOKEN', 'HTTPContentType', 'HTTPHeader', 'OauthKey',
+    'BasicKey'
 ]

@@ -1,0 +1,86 @@
+[
+    {
+        "task": {
+            "id": 4647036,
+            "updated_at": "2015-08-11T21:09:28Z",
+            "deactivated": false,
+            "created_at": "2015-08-11T21:09:28Z",
+            "billable_by_default": false,
+            "name": "Business Development",
+            "is_default": true,
+            "default_hourly_rate": 0
+        }
+    }, 
+    {
+        "task": {
+            "id": 4647032,
+            "updated_at": "2015-08-11T21:09:28Z",
+            "deactivated": false,
+            "created_at": "2015-08-11T21:09:28Z",
+            "billable_by_default": true,
+            "name": "Graphic Design",
+            "is_default": true,
+            "default_hourly_rate": 0
+        }
+    }, 
+    {
+        "task": {
+            "id": 4647034,
+            "updated_at": "2015-08-11T21:09:28Z",
+            "deactivated": false,
+            "created_at": "2015-08-11T21:09:28Z",
+            "billable_by_default": true,
+            "name": "Marketing",
+            "is_default": true,
+            "default_hourly_rate": 0
+        }
+    }, 
+    {
+        "task": {
+            "id": 4647033,
+            "updated_at": "2015-08-11T21:09:28Z",
+            "deactivated": false,
+            "created_at": "2015-08-11T21:09:28Z",
+            "billable_by_default": true,
+            "name": "Programming",
+            "is_default": true,
+            "default_hourly_rate": 0
+        }
+    }, 
+    {
+        "task": {
+            "id": 4647035,
+            "updated_at": "2015-08-11T21:09:28Z",
+            "deactivated": false,
+            "created_at": "2015-08-11T21:09:28Z",
+            "billable_by_default": true,
+            "name": "Project Management",
+            "is_default": true,
+            "default_hourly_rate": 0
+        }
+    }, 
+    {
+        "task": {
+            "id": 4713965,
+            "updated_at": "2015-08-27T00:42:20Z",
+            "deactivated": false,
+            "created_at": "2015-08-27T00:42:20Z",
+            "billable_by_default": true,
+            "name": "Research",
+            "is_default": false,
+            "default_hourly_rate": 0
+        }
+    }, 
+    {
+        "task": {
+            "id": 4647037,
+            "updated_at": "2015-08-11T21:09:28Z",
+            "deactivated": false,
+            "created_at": "2015-08-11T21:09:28Z",
+            "billable_by_default": false,
+            "name": "Vacation",
+            "is_default": false,
+            "default_hourly_rate": 0
+        }
+    }
+]
